@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A contributor-friendly overview of project status, ownership, activity, and priority.">
+    <title>Project Pulse</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="dashboard" aria-labelledby="page-title">
+      <header class="dashboard-header">
+        <p class="eyebrow">Team overview</p>
+        <h1 id="page-title">Project Pulse</h1>
+        <p class="dashboard-intro">A quick view of what the team is working on, who owns it, and where attention is needed.</p>
+      </header>
+
+      <section class="dashboard-summary" aria-labelledby="summary-title">
+        <h2 id="summary-title">Current portfolio</h2>
+        <p id="project-count" aria-live="polite">Loading projects…</p>
+      </section>
+
+      <section aria-labelledby="projects-title">
+        <h2 id="projects-title">Projects</h2>
+        <div id="project-status" role="status" aria-live="polite"></div>
+        <ul id="project-list" class="project-list" aria-label="Project portfolio"></ul>
+      </section>
+    </main>
+
+    <template id="project-card-template">
+      <li class="project-card">
+        <article>
+          <header class="project-card-header">
+            <h3 data-field="name"></h3>
+            <span class="status-badge" data-field="status"></span>
+          </header>
+          <dl class="project-details">
+            <div>
+              <dt>Owner</dt>
+              <dd data-field="owner"></dd>
+            </div>
+            <div>
+              <dt>Priority</dt>
+              <dd><span class="priority-pill" data-field="priority"></span></dd>
+            </div>
+          </dl>
+          <p class="recent-activity">
+            <span class="activity-label">Recent activity</span>
+            <span data-field="recentActivity"></span>
+          </p>
+        </article>
+      </li>
+    </template>
+
+    <script>
+      (() => {
+        const list = document.querySelector("#project-list");
+        const status = document.querySelector("#project-status");
+        const count = document.querySelector("#project-count");
+        const template = document.querySelector("#project-card-template");
+
+        const showError = (message) => {
+          status.textContent = message;
+          status.className = "error-message";
+          count.textContent = "Project data is unavailable.";
+        };
+
+        const validProject = (project) =>
+          project && typeof project === "object" &&
+          ["name", "owner", "status", "priority", "recentActivity"]
+            .every((field) => typeof project[field] === "string" && project[field].trim());
+
+        const normalizeModifier = (value) =>
+          value.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+
+        const renderProjects = (projects) => {
+          list.replaceChildren();
+          projects.forEach((project) => {
+            const card = template.content.cloneNode(true);
+            card.querySelectorAll("[data-field]").forEach((element) => {
+              element.textContent = project[element.dataset.field];
+            });
+            card.querySelector(".status-badge").classList.add(
+              `status-badge--${normalizeModifier(project.status)}`
+            );
+            card.querySelector(".priority-pill").classList.add(
+              `priority-pill--${normalizeModifier(project.priority)}`
+            );
+            list.append(card);
+          });
+          count.textContent = `${projects.length} ${projects.length === 1 ? "project" : "projects"} in view`;
+          status.textContent = "";
+        };
+
+        fetch("project-data.json", { headers: { Accept: "application/json" } })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(`Project data request failed (${response.status}).`);
+            }
+            return response.json();
+          })
+          .then((data) => {
+            if (!data || !Array.isArray(data.projects)) {
+              throw new Error("Project data must contain a top-level projects array.");
+            }
+            const projects = data.projects.filter(validProject);
+            if (!projects.length) {
+              throw new Error("No valid projects are available to display.");
+            }
+            renderProjects(projects);
+          })
+          .catch((error) => {
+            console.error("Unable to load Project Pulse data:", error);
+            list.replaceChildren();
+            showError("We couldn’t load the project list. Please try again later.");
+          });
+      })();
+    </script>
+  </body>
+</html>

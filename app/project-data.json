@@ -1,0 +1,32 @@
+{
+  "projects": [
+    {
+      "name": "Contributor Portal",
+      "owner": "Avery Chen",
+      "status": "In progress",
+      "priority": "High",
+      "recentActivity": "Onboarding flow is ready for team review."
+    },
+    {
+      "name": "Observability Refresh",
+      "owner": "Jordan Williams",
+      "status": "Active",
+      "priority": "Medium",
+      "recentActivity": "Added service-level dashboard alerts."
+    },
+    {
+      "name": "Mobile Release 3.2",
+      "owner": "Samira Patel",
+      "status": "At risk",
+      "priority": "Critical",
+      "recentActivity": "Waiting on final accessibility verification."
+    },
+    {
+      "name": "Knowledge Base",
+      "owner": "Diego Morales",
+      "status": "Planned",
+      "priority": "Low",
+      "recentActivity": "Content audit is scheduled for next week."
+    }
+  ]
+}
